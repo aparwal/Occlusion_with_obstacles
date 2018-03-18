@@ -142,6 +142,7 @@ CVector2 CFootBotFlocking::FlockingVector() {
    /* Get the camera readings */
    const CCI_ColoredBlobOmnidirectionalCameraSensor::SReadings& sReadings = m_pcCamera->GetReadings();
    /* Go through the camera readings to calculate the flocking interaction vector */
+   LOG << sReadings.BlobList.size() << std::endl;
    if(! sReadings.BlobList.empty()) {
       CVector2 cAccum;
       Real fLJ;

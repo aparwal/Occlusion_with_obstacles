@@ -47,6 +47,31 @@ using namespace argos;
 class CFootBotOcclusion : public CCI_Controller {
 
 public:
+   /*
+    * The following variables are used as parameters for the
+    * diffusion algorithm. You can set their value in the <parameters>
+    * section of the XML configuration file, under the
+    * <controllers><footbot_foraging_controller><parameters><diffusion>
+    * section.
+    */
+   struct SDiffusionParams {
+      /*
+       * Maximum tolerance for the proximity reading between
+       * the robot and the closest obstacle.
+       * The proximity reading is 0 when nothing is detected
+       * and grows exponentially to 1 when the obstacle is
+       * touching the robot.
+       */
+      Real Delta;
+      /* Angle tolerance range to go straight. */
+      CRange<CRadians> GoStraightAngleRange;
+
+      /* Constructor */
+      SDiffusionParams();
+
+      /* Parses the XML section for diffusion */
+      void Init(TConfigurationNode& t_tree);
+   };
 
    /*
     * The following variables are used as parameters for
@@ -56,33 +81,30 @@ public:
     * <controllers><footbot_foraging_controller><parameters><wheel_turning>
     * section.
     */
-   // struct SWheelTurningParams {
-   //    /*
-   //     * The turning mechanism.
-   //     * The robot can be in three different turning states.
-   //     */
-   //    enum ETurningMechanism
-   //    {
-   //       NO_TURN = 0, // go straight
-   //       SOFT_TURN,   // both wheels are turning forwards, but at different speeds
-   //       HARD_TURN    // wheels are turning with opposite speeds
-   //    } TurningMechanism;
-   //    /*
-   //     * Angular thresholds to change turning state.
-   //     */
-   //    CRadians HardTurnOnAngleThreshold;
-   //    CRadians SoftTurnOnAngleThreshold;
-   //    CRadians NoTurnAngleThreshold;
-   //    /* Maximum wheel speed */
-   //    Real MaxSpeed;
+   struct SWheelTurningParams {
+      /*
+       * The turning mechanism.
+       * The robot can be in three different turning states.
+       */
+      enum ETurningMechanism
+      {
+         NO_TURN = 0, // go straight
+         SOFT_TURN,   // both wheels are turning forwards, but at different speeds
+         HARD_TURN    // wheels are turning with opposite speeds
+      } TurningMechanism;
+      /*
+       * Angular thresholds to change turning state.
+       */
+      CRadians HardTurnOnAngleThreshold;
+      CRadians SoftTurnOnAngleThreshold;
+      CRadians NoTurnAngleThreshold;
+      /* Maximum wheel speed */
+      Real MaxSpeed;
 
-   //    void Init(TConfigurationNode& t_tree);
-   // };
-
-    
-    //blalbalba
-
-	/*
+      void Init(TConfigurationNode& t_tree);
+   };
+ 
+	 /*
     * Contains all the state information about the controller.
     */
    struct SStateData {
@@ -97,6 +119,13 @@ public:
 
       /* True when the goal is not occluded */
       bool GoalVisibility;
+
+      /* True when the object is visible */
+      bool ObjectVisibility;
+
+      /* True when the object is reached */
+      bool ObjectReached;
+
 
       SStateData();
       // void Init(TConfigurationNode& t_node);
@@ -183,10 +212,16 @@ private:
     * In pratice, it sets the SStateData::InNest flag.
     * Future, more complex implementations should add their
     * state update code here.
- */   /* Pointer to the omnidirectional camera sensor */
+    */
    void UpdateState();
 
+   /* Excetues a diffsuion type walk*/
+   void Diffuse();
+   CVector2 DiffusionVector(bool& );
 
+
+   /* Sets the wheel speeds such that it ultimately follows the given vector*/
+   void SetWheelSpeedsFromVector(const CVector2&);
 
    /*
     * Executes the different states.
@@ -194,7 +229,7 @@ private:
    
    // TODO
 
-   // void SearchObject();
+   void SearchObject();
    // void ApproachObject();
    // void CheckForGoal();
    void GoalNotOccluded();
@@ -216,29 +251,10 @@ private:
    /* The controller state information */
    SStateData m_sStateData;
 
-   /*
-    * The following variables are used as parameters for the
-    * algorithm. You can set their value in the <parameters> section
-    * of the XML configuration file, under the
-    * <controllers><footbot_occlusion_controller><diffusion> section.
-    */
-
-   /* Maximum tolerance for the angle between
-    * the robot heading direction and
-    * the closest obstacle detected. */
-   CDegrees m_cAlpha;
-   /* Maximum tolerance for the proximity reading between
-    * the robot and the closest obstacle.
-    * The proximity reading is 0 when nothing is detected
-    * and grows exponentially to 1 when the obstacle is
-    * touching the robot.
-    */
-   Real m_fDelta;
-   /* Wheel speed. */
-   Real m_fWheelVelocity;
-   /* Angle tolerance range to go straight.
-    * It is set to [-alpha,alpha]. */
-   CRange<CRadians> m_cGoStraightAngleRange;
+  /* The turning parameters */
+   SWheelTurningParams m_sWheelTurningParams;
+   /* The diffusion parameters */
+   SDiffusionParams m_sDiffusionParams;
 
 };
 
