@@ -32,13 +32,15 @@
 #include <argos3/plugins/robots/foot-bot/control_interface/ci_footbot_proximity_sensor.h>
 /* Vector2 definitions */
 #include <argos3/core/utility/math/vector2.h>
+/* Definitions for random number generation */
+// #include <argos3/core/utility/math/rng.h>
+
 
 /*
  * All the ARGoS stuff in the 'argos' namespace.
  * With this statement, you save typing argos:: every time.
  */
 using namespace argos;
-
 /*
  * A controller is simply an implementation of the CCI_Controller class in argos.
  */
@@ -51,9 +53,32 @@ public:
     * turning during navigation. You can set their value
     * in the <parameters> section of the XML configuration
     * file, under the
-    * <controllers><footbot_occlusion_controller><parameters><wheel_turning>
+    * <controllers><footbot_foraging_controller><parameters><wheel_turning>
     * section.
     */
+   // struct SWheelTurningParams {
+   //    /*
+   //     * The turning mechanism.
+   //     * The robot can be in three different turning states.
+   //     */
+   //    enum ETurningMechanism
+   //    {
+   //       NO_TURN = 0, // go straight
+   //       SOFT_TURN,   // both wheels are turning forwards, but at different speeds
+   //       HARD_TURN    // wheels are turning with opposite speeds
+   //    } TurningMechanism;
+   //    /*
+   //     * Angular thresholds to change turning state.
+   //     */
+   //    CRadians HardTurnOnAngleThreshold;
+   //    CRadians SoftTurnOnAngleThreshold;
+   //    CRadians NoTurnAngleThreshold;
+   //    /* Maximum wheel speed */
+   //    Real MaxSpeed;
+
+   //    void Init(TConfigurationNode& t_tree);
+   // };
+
     
     //blalbalba
 
@@ -74,7 +99,7 @@ public:
       bool GoalVisibility;
 
       SStateData();
-      void Init(TConfigurationNode& t_node);
+      // void Init(TConfigurationNode& t_node);
       void Reset();
    };
 
@@ -124,32 +149,97 @@ public:
    /*
     * Returns true if the robot is currently approaching the object.
     */
-   inline bool IsResting() const {
+   inline bool IsApproaching() const {
       return m_sStateData.State == SStateData::STATE_APPROACH_OBJECT;
    }
 
    /*
     * Returns true if the robot is currently at the object and cheking for goal.
     */
-   inline bool IsResting() const {
+   inline bool IsChecking() const {
       return m_sStateData.State == SStateData::STATE_CHECK_FOR_GOAL;
    }
 
    /*
     * Returns true if the robot is currently moving around the object.
     */
-   inline bool IsResting() const {
+   inline bool IsNotOccluded() const {
       return m_sStateData.State == SStateData::STATE_GOAL_NOT_OCCLUDED;
    }
 
    /*
     * Returns true if the robot is currently pushing the object.
     */
-   inline bool IsResting() const {
+   inline bool IsOccluded() const {
       return m_sStateData.State == SStateData::STATE_GOAL_OCCLUDED;
    }
-            // STATE_SEARCH_OBJECT = 0,
-         // STATE_APPROACH_OBJECT,
-      	 // STATE_CHECK_FOR_GOAL,
-      	 STATE_GOAL_NOT_OCCLUDED = 0, 	//(Move around object)
-         STATE_GOAL_OCCLUDED,
+
+
+
+private:
+
+   /*
+    * Updates the state information.
+    * In pratice, it sets the SStateData::InNest flag.
+    * Future, more complex implementations should add their
+    * state update code here.
+ */   /* Pointer to the omnidirectional camera sensor */
+   void UpdateState();
+
+
+
+   /*
+    * Executes the different states.
+    */
+   
+   // TODO
+
+   // void SearchObject();
+   // void ApproachObject();
+   // void CheckForGoal();
+   void GoalNotOccluded();
+   void GoalOccluded();
+
+
+   /* Pointer to the differential steering actuator */
+   CCI_DifferentialSteeringActuator* m_pcWheels;
+   /* Pointer to the LEDs actuator */
+   CCI_LEDsActuator* m_pcLEDs;
+   /* Pointer to the camera sensor */
+   CCI_ColoredBlobOmnidirectionalCameraSensor* m_pcCamera;
+   /* Pointer to the foot-bot proximity sensor */
+   CCI_FootBotProximitySensor* m_pcProximity;
+   /* Pointer to the foot-bot light sensor */
+   CCI_FootBotLightSensor* m_pcLight;
+   /* The random number generator */
+   // CRandom::CRNG* m_pcRNG;
+   /* The controller state information */
+   SStateData m_sStateData;
+
+   /*
+    * The following variables are used as parameters for the
+    * algorithm. You can set their value in the <parameters> section
+    * of the XML configuration file, under the
+    * <controllers><footbot_occlusion_controller><diffusion> section.
+    */
+
+   /* Maximum tolerance for the angle between
+    * the robot heading direction and
+    * the closest obstacle detected. */
+   CDegrees m_cAlpha;
+   /* Maximum tolerance for the proximity reading between
+    * the robot and the closest obstacle.
+    * The proximity reading is 0 when nothing is detected
+    * and grows exponentially to 1 when the obstacle is
+    * touching the robot.
+    */
+   Real m_fDelta;
+   /* Wheel speed. */
+   Real m_fWheelVelocity;
+   /* Angle tolerance range to go straight.
+    * It is set to [-alpha,alpha]. */
+   CRange<CRadians> m_cGoStraightAngleRange;
+
+};
+
+#endif

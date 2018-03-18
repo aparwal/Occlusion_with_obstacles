@@ -16,7 +16,7 @@
   <!-- *************** -->
   <controllers>
 
-    <footbot_occlusion_controller id="fdc"
+    <footbot_occlusion_controller id="foc"
                                   library="build/controllers/footbot_occlusion/libfootbot_occlusion.so">
       <actuators>
         <differential_steering implementation="default" />
@@ -25,7 +25,7 @@
 
       <sensors>
         <footbot_proximity implementation="default" show_rays="true" />
-        <!-- <footbot_light implementation="rot_z_only" show_rays="true" /> -->
+        <footbot_light implementation="rot_z_only"  show_rays="true" />
         <colored_blob_omnidirectional_camera implementation="rot_z_only" medium="leds" show_rays="true" />
       </sensors>
 
@@ -59,7 +59,7 @@
       <orientation method="gaussian" mean="0,0,0" std_dev="360,0,0" />
       <entity quantity="10" max_trials="100">
         <foot-bot id="fb">
-          <controller config="fdc" />
+          <controller config="foc" />
         </foot-bot>
       </entity>
     </distribute>
@@ -88,7 +88,9 @@
   <!-- ********* -->
   <!-- * Media * -->
   <!-- ********* -->
-  <media />
+  <media>
+    <led id="leds" />
+  </media>
 
   <!-- ****************** -->
   <!-- * Visualization * -->
