@@ -8,7 +8,7 @@
     <system threads="0" />
     <experiment length="0"
                 ticks_per_second="10"
-                random_seed="124" />
+                random_seed="7" />
   </framework>
 
   <!-- *************** -->
@@ -26,10 +26,10 @@
       <sensors>
         <footbot_proximity implementation="default" show_rays="true" />
         <footbot_light implementation="rot_z_only"  show_rays="true" />
-        <colored_blob_omnidirectional_camera implementation="rot_z_only" medium="leds" show_rays="true" />
+        <colored_blob_omnidirectional_camera implementation="rot_z_only" medium="leds" show_rays="false" />
       </sensors>
 
-      <params alpha="7.5" delta="0.1" velocity="5" />
+      <params alpha="7.5" delta="0.1" velocity="15" />
 
     </footbot_occlusion_controller>
 
@@ -66,7 +66,7 @@
 
     <!-- Initiallizing object -->
     <cylinder id="object" radius="0.5" height="0.6" movable="false">
-      <body position="-2,-2,0" orientation="0,0,0"/>
+      <body position="0,0,0" orientation="0,0,0"/>
     </cylinder>
 
     <!-- Initializing target light -->
@@ -74,7 +74,7 @@
        position="3.5,3.5,0"
        orientation="0,0,0"
        color="yellow"
-       intensity="3.0"
+       intensity="15.0"
        medium="leds" />
   </arena>
 

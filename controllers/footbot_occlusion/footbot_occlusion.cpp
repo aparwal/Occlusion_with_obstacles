@@ -21,6 +21,7 @@ void CFootBotOcclusion::SStateData::Reset() {
 //    GoalVisibility = true;
 // }
 CFootBotOcclusion::SStateData::SStateData(){
+   State = STATE_GOAL_NOT_OCCLUDED;
    GoalVisibility = true;
 }
 
@@ -60,6 +61,7 @@ void CFootBotOcclusion::Init(TConfigurationNode& t_node) {
 	  	m_pcProximity = GetSensor  <CCI_FootBotProximitySensor      >("footbot_proximity"    );
 	  	m_pcLight     = GetSensor  <CCI_FootBotLightSensor          >("footbot_light"        );
 	  	m_pcCamera 	  = GetSensor  <CCI_ColoredBlobOmnidirectionalCameraSensor>("colored_blob_omnidirectional_camera");
+      m_pcLEDs->SetAllColors(CColor::RED);
       
 
 	   /*
@@ -89,6 +91,7 @@ void CFootBotOcclusion::Init(TConfigurationNode& t_node) {
 /****************************************/
 
 void CFootBotOcclusion::ControlStep() {
+   // LOG << m_sStateData.State << std::endl;
    switch(m_sStateData.State) {
       case SStateData::STATE_SEARCH_OBJECT:{
          GoalNotOccluded();
@@ -104,15 +107,17 @@ void CFootBotOcclusion::ControlStep() {
       }
 
       case SStateData::STATE_GOAL_NOT_OCCLUDED:{
-      	 GoalNotOccluded();
+         
+      	GoalNotOccluded();
          break;
       }
       case SStateData::STATE_GOAL_OCCLUDED:{
+         
          GoalOccluded();
          break;
       }         
       default: {
-         LOGERR << "OH NO! Unkown State! Find The Bug!" << std::endl;
+         LOGERR << "Unkown State: "<<m_sStateData.State << std::endl;
       }
    }
 }
@@ -135,6 +140,7 @@ void CFootBotOcclusion::UpdateState() {
    /* Reset state flags */
    m_sStateData.GoalVisibility = false;
 
+
    /*Look for light*/
    const CCI_FootBotLightSensor::TReadings& tReadings = m_pcLight->GetReadings();
    /* Calculate a normalized vector that points to the closest light */
@@ -142,12 +148,16 @@ void CFootBotOcclusion::UpdateState() {
    for(size_t i = 0; i < tReadings.size(); ++i) {
       cAccum += CVector2(tReadings[i].Value, tReadings[i].Angle);
    }
+   LOG<< cAccum.Length() <<std::endl;
    if(cAccum.Length() > 0.0f) {
    	  m_sStateData.GoalVisibility = true;
+        m_sStateData.State = SStateData::STATE_GOAL_NOT_OCCLUDED;
       /* Make the vector long as 1/4 of the max speed */
       // cAccum.Normalize();
       // cAccum *= 0.25f * m_sWheelTurningParams.MaxSpeed;
    }
+   else m_sStateData.State = SStateData::STATE_GOAL_OCCLUDED;
+
 
 
 }
@@ -161,6 +171,7 @@ void CFootBotOcclusion::UpdateState() {
 // void CFootBotOcclusion::ApproachObject(){}
 // void CFootBotOcclusion::CheckForGoal(){}
 void CFootBotOcclusion::GoalNotOccluded(){
+   m_pcLEDs->SetAllColors(CColor::GREEN);
 	/* Doing basic diffusion here */
    /* Get readings from proximity sensor */
    const CCI_FootBotProximitySensor::TReadings& tProxReads = m_pcProximity->GetReadings();
