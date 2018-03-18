@@ -1,0 +1,5 @@
+add_library(footbot_occlusion MODULE footbot_occlusion.h footbot_occlusion.cpp)
+target_link_libraries(footbot_occlusion
+  argos3core_simulator
+  argos3plugin_simulator_footbot
+  argos3plugin_simulator_genericrobot)
