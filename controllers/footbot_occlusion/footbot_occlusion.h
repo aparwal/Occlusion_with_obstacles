@@ -126,9 +126,11 @@ public:
       /* True when the object is reached */
       bool ObjectReached;
 
+      Real ApproachDistance;
+
 
       SStateData();
-      // void Init(TConfigurationNode& t_node);
+      void Init(TConfigurationNode& t_node);
       void Reset();
    };
 
@@ -215,9 +217,11 @@ private:
     */
    void UpdateState();
 
-   /* Excetues a diffsuion type walk*/
-   void Diffuse();
+   /* Get vector for a pure diffsuion type walk*/
    CVector2 DiffusionVector(bool& );
+
+   /* Get vector pointing towards object, lenght roughly equal to distance*/
+   CVector2 Vector2Object();
 
 
    /* Sets the wheel speeds such that it ultimately follows the given vector*/
@@ -231,7 +235,7 @@ private:
 
    void SearchObject();
    // void ApproachObject();
-   // void CheckForGoal();
+   void CheckForGoal();
    void GoalNotOccluded();
    void GoalOccluded();
 
@@ -250,7 +254,6 @@ private:
    // CRandom::CRNG* m_pcRNG;
    /* The controller state information */
    SStateData m_sStateData;
-
   /* The turning parameters */
    SWheelTurningParams m_sWheelTurningParams;
    /* The diffusion parameters */
