@@ -55,11 +55,13 @@ void CFootBotOcclusion::SStateData::Reset() {
    GoalVisibility = false;
    ObjectVisibility = false;
    ObjectReached = false;
+   TimeInMoveAround = 0;
 }
 
 void CFootBotOcclusion::SStateData::Init(TConfigurationNode& t_node) {
    try {
       GetNodeAttribute(t_node, "approach_distance", ApproachDistance);
+      GetNodeAttribute(t_node, "minimum_move_around_time", MinimumMoveAroundTime);
    }
    catch(CARGoSException& ex) {
       THROW_ARGOSEXCEPTION_NESTED("Error initializing controller state parameters.", ex);
@@ -72,6 +74,7 @@ CFootBotOcclusion::SStateData::SStateData(){
    GoalVisibility = false;
    ObjectVisibility = false;
    ObjectReached = false;
+   TimeInMoveAround = 0;
 }
 
 /****************************************/
@@ -122,46 +125,6 @@ void CFootBotOcclusion::Init(TConfigurationNode& t_node) {
    }
    /* Enable camera filtering */
    m_pcCamera->Enable();
-}
-
-
-/****************************************/
-/****************************************/
-
-void CFootBotOcclusion::ControlStep() {
-   
-   switch(m_sStateData.State) {
-      case SStateData::STATE_SEARCH_OBJECT:{
-         m_pcLEDs->SetSingleColor(12, CColor::BLUE);
-         SearchObject();
-         break;
-      }
-      case SStateData::STATE_APPROACH_OBJECT:{
-         m_pcLEDs->SetSingleColor(12, CColor::YELLOW);
-         SearchObject();
-         break;
-      }
-      case SStateData::STATE_CHECK_FOR_GOAL:{
-         m_pcLEDs->SetSingleColor(12, CColor::WHITE);
-         CheckForGoal();
-         break;
-      }
-
-      case SStateData::STATE_GOAL_NOT_OCCLUDED:{
-         m_pcLEDs->SetSingleColor(12, CColor::RED);
-      	GoalNotOccluded();
-         break;
-      }
-      case SStateData::STATE_GOAL_OCCLUDED:{
-         m_pcLEDs->SetSingleColor(12, CColor::BLACK);
-         GoalOccluded();
-         break;
-      }         
-      default: {
-         LOGERR << "Unkown State: "<<m_sStateData.State << std::endl;
-      }
-   }
-   UpdateState();
 }
 
 /****************************************/
@@ -245,40 +208,6 @@ void CFootBotOcclusion::SetWheelSpeedsFromVector(const CVector2& c_heading) {
    m_pcWheels->SetLinearVelocity(fLeftWheelSpeed, fRightWheelSpeed);
 }
 
-
-/****************************************/
-/****************************************/
-
-// void CFootBotOcclusion::Diffuse(){
-//    /* Doing basic diffusion here */
-//    /* Get readings from proximity sensor */
-//    const CCI_FootBotProximitySensor::TReadings& tProxReads = m_pcProximity->GetReadings();
-//    /* Sum them together */
-//    CVector2 cAccumulator;
-//    for(size_t i = 0; i < tProxReads.size(); ++i) {
-//       cAccumulator += CVector2(tProxReads[i].Value, tProxReads[i].Angle);
-//    }
-//    cAccumulator /= tProxReads.size();
-//    /* If the angle of the vector is small enough and the closest obstacle
-//     * is far enough, continue going straight, otherwise curve a little
-//     */
-//    if(m_sDiffusionParams.GoStraightAngleRange.WithinMinBoundIncludedMaxBoundIncluded(cAccumulator.Angle()) &&
-//       cAccumulator.Length() < m_sDiffusionParams.Delta ) {
-//       /* Go straight */
-//       m_pcWheels->SetLinearVelocity(m_sWheelTurningParams.MaxSpeed,m_sWheelTurningParams.MaxSpeed);
-//    }
-//    else {
-//       /* Turn, depending on the sign of the angle */
-//       if(cAccumulator.Angle().GetValue() > 0.0f) {
-//          m_pcWheels->SetLinearVelocity(m_sWheelTurningParams.MaxSpeed, 0.0f);
-//       }
-//       else {
-//          m_pcWheels->SetLinearVelocity(0.0f, m_sWheelTurningParams.MaxSpeed);
-//       }
-//    }
-// }
-
-
 /****************************************/
 /****************************************/
 
@@ -310,6 +239,7 @@ CVector2 CFootBotOcclusion::DiffusionVector(bool& b_collision) {
 
 CVector2 CFootBotOcclusion::Vector2Object() {
    m_sStateData.ObjectVisibility = false;
+   // m_sStateData.ObjectReached = false;
    CVector2 cAccum;
    size_t unBlobsSeen = 0;   
 
@@ -333,9 +263,17 @@ CVector2 CFootBotOcclusion::Vector2Object() {
             /*Check if object is close*/
          }
       }
+
    }
-   if (m_sStateData.ObjectVisibility)
+
+   if (m_sStateData.ObjectVisibility){
       cAccum /= unBlobsSeen;
+      if(cAccum.Length() < m_sStateData.ApproachDistance)
+         m_sStateData.ObjectReached = true;
+      else
+         m_sStateData.ObjectReached = false;
+   }
+
    return cAccum;
 
 }
@@ -343,26 +281,115 @@ CVector2 CFootBotOcclusion::Vector2Object() {
 /****************************************/
 /****************************************/
 
+void CFootBotOcclusion::ControlStep() {
+   
+   switch(m_sStateData.State) {
+      case SStateData::STATE_SEARCH_OBJECT:{
+         m_pcLEDs->SetSingleColor(12, CColor::YELLOW);
+         SearchObject();
+         break;
+      }
+      case SStateData::STATE_APPROACH_OBJECT:{
+         m_pcLEDs->SetSingleColor(12, CColor::BLUE);
+         SearchObject();
+         break;
+      }
+      case SStateData::STATE_NEAR_OBJECT:{
+         m_pcLEDs->SetSingleColor(12, CColor::RED);
+         SearchObject();
+         break;
+      }
+      case SStateData::STATE_CHECK_FOR_GOAL:{
+         m_pcLEDs->SetSingleColor(12, CColor::RED);
+         CheckForGoal();
+         break;
+      }
+
+      case SStateData::STATE_GOAL_NOT_OCCLUDED:{
+         m_pcLEDs->SetSingleColor(12, CColor::WHITE);
+      	GoalNotOccluded();
+         break;
+      }
+      case SStateData::STATE_GOAL_OCCLUDED:{
+         m_pcLEDs->SetSingleColor(12, CColor::BLACK);
+         GoalOccluded();
+         break;
+      }         
+      default: {
+         LOGERR << "Unkown State: "<<m_sStateData.State << std::endl;
+      }
+   }
+   UpdateState();
+}
+
+
+/****************************************/
+/****************************************/
+
+
 void CFootBotOcclusion::UpdateState() {
    /* Reset state flags - don't*/
    // m_sStateData.GoalVisibility = false;
 
    CheckForGoal();
-   if(!m_sStateData.ObjectVisibility)
-   m_sStateData.State=SStateData::STATE_SEARCH_OBJECT;
+   // if(!m_sStateData.ObjectVisibility || !m_sStateData.ObjectReached)
+   // m_sStateData.State=SStateData::STATE_SEARCH_OBJECT;
 
    switch(m_sStateData.State) {
       case SStateData::STATE_SEARCH_OBJECT:{
          if(m_sStateData.ObjectVisibility)
             m_sStateData.State=SStateData::STATE_APPROACH_OBJECT;
       }
+
       case SStateData::STATE_APPROACH_OBJECT:{
          if(m_sStateData.ObjectVisibility && m_sStateData.ObjectReached)
-            m_sStateData.State=SStateData::STATE_CHECK_FOR_GOAL;
+            m_sStateData.State=SStateData::STATE_NEAR_OBJECT;
+         else if(!m_sStateData.ObjectVisibility)
+            m_sStateData.State=SStateData::STATE_SEARCH_OBJECT;
          break;
       }
-      case SStateData::STATE_CHECK_FOR_GOAL:
-      case SStateData::STATE_GOAL_NOT_OCCLUDED:
+
+      case SStateData::STATE_NEAR_OBJECT:{
+         if(m_sStateData.ObjectVisibility && m_sStateData.ObjectReached)
+            m_sStateData.State=SStateData::STATE_CHECK_FOR_GOAL;
+         else if(!m_sStateData.ObjectVisibility)
+            m_sStateData.State=SStateData::STATE_SEARCH_OBJECT;
+         break;
+      }
+
+      case SStateData::STATE_CHECK_FOR_GOAL:{
+
+         if(!m_sStateData.GoalVisibility)
+            m_sStateData.State=SStateData::STATE_GOAL_OCCLUDED;
+         else
+            m_sStateData.State=SStateData::STATE_GOAL_NOT_OCCLUDED;
+         break;
+      }         
+
+      case SStateData::STATE_GOAL_NOT_OCCLUDED:{
+
+         
+         if (m_sStateData.TimeInMoveAround < m_sStateData.MinimumMoveAroundTime)
+         {
+            /* stay in move */
+            m_sStateData.State=SStateData::STATE_GOAL_NOT_OCCLUDED;
+            ++m_sStateData.TimeInMoveAround;
+         }
+         else{
+            LOG<<"Out of move_around"<<std::endl;
+            /*reset timer*/
+            m_sStateData.TimeInMoveAround = 0;
+            /* get out of state and push/find object*/
+            if(!m_sStateData.GoalVisibility && m_sStateData.ObjectReached)
+               m_sStateData.State=SStateData::STATE_GOAL_OCCLUDED;
+            else
+               m_sStateData.State=SStateData::STATE_SEARCH_OBJECT;
+         }
+            
+            
+         break;
+      }         
+
       case SStateData::STATE_GOAL_OCCLUDED:{
 
          if(!m_sStateData.GoalVisibility)
@@ -375,7 +402,6 @@ void CFootBotOcclusion::UpdateState() {
          LOGERR << "Unkown State: "<<m_sStateData.State << std::endl;
       }
    }
-
 }
 
 /****************************************/
@@ -383,61 +409,23 @@ void CFootBotOcclusion::UpdateState() {
 
 void CFootBotOcclusion::SearchObject(){
 
-   // m_sStateData.ObjectVisibility = false;
-
-   // size_t unBlobsSeen = 0;   
-
-   // /* Get the camera readings */
-   // const CCI_ColoredBlobOmnidirectionalCameraSensor::SReadings& sReadings = m_pcCamera->GetReadings();
-   
-   // /* Go through the camera readings to locate oject */
-   // if(! sReadings.BlobList.empty()) {
-
-   //    for(size_t i = 0; i < sReadings.BlobList.size(); ++i) {
-   //       /*Look for green*/
-   //       if(sReadings.BlobList[i]->Color == CColor::GREEN) {
-         
-   //          cVec2Obj += CVector2(m_sWheelTurningParams.MaxSpeed,
-   //                             sReadings.BlobList[i]->Angle);
-
-   //          /*Change state variable*/            
-   //          m_sStateData.ObjectVisibility = true;
-   //          /* Increment the blobs seen counter */
-   //          ++unBlobsSeen;
-   //          /*Check if object is close*/
-
-   //          if(sReadings.BlobList[i]->Distance < m_sStateData.ApproachDistance){
-   //             m_sStateData.ObjectReached = true;
-               
-   //          }
-
-   //       }
-
-   //    }
-   // }
    CVector2 cVec2Obj = Vector2Object();
-   if(cVec2Obj.Length() < m_sStateData.ApproachDistance)
-      m_sStateData.ObjectReached = true;
 
    /* Get the diffusion vector to perform obstacle avoidance */
    bool bCollision;
    CVector2 cDiffusion = DiffusionVector(bCollision);
 
    if (m_sStateData.ObjectVisibility)
-      /*Move towards object*/
-      SetWheelSpeedsFromVector(0.5*cVec2Obj+0.5*m_sWheelTurningParams.MaxSpeed * cDiffusion );
+      /*Move towards object while avoiding collisions*/
+      SetWheelSpeedsFromVector(0.75*cVec2Obj+0.25*m_sWheelTurningParams.MaxSpeed * cDiffusion );
    else
       /* Random walk*/
        SetWheelSpeedsFromVector(m_sWheelTurningParams.MaxSpeed * cDiffusion );
 }
 
-// TODO: Plain diffision for now, needs to be chaged later
+// TODO: Plain search and approach behaviour for now, needs to be chaged later
 
-// void CFootBotOcclusion::ApproachObject(){
-//     Get the diffusion vector to perform obstacle avoidance 
-//       bool bCollision;
-//       CVector2 cDiffusion = DiffusionVector(bCollision);
-// }
+// void CFootBotOcclusion::ApproachObject(){}
 
 void CFootBotOcclusion::CheckForGoal(){
       /*Look for light*/
@@ -463,11 +451,11 @@ void CFootBotOcclusion::GoalNotOccluded(){
    CVector2 cDiffusion = DiffusionVector(bCollision);
 
    CVector2 cVec2Obj = Vector2Object();
-   cVec2Obj = CVector2(m_sWheelTurningParams.MaxSpeed,cVec2Obj.Angle()-CRadians(1.9));
+   cVec2Obj = CVector2(m_sWheelTurningParams.MaxSpeed,cVec2Obj.Angle()-CRadians(1.6));
 
    if (m_sStateData.ObjectVisibility)
       /*Move towards left hand side of the object*/
-      SetWheelSpeedsFromVector(cVec2Obj+m_sWheelTurningParams.MaxSpeed * cDiffusion );
+      SetWheelSpeedsFromVector(0.75*cVec2Obj+0.25*m_sWheelTurningParams.MaxSpeed * cDiffusion );
    else
       /* Random walk*/
        SetWheelSpeedsFromVector(m_sWheelTurningParams.MaxSpeed * cDiffusion );
@@ -475,22 +463,26 @@ void CFootBotOcclusion::GoalNotOccluded(){
 
 void CFootBotOcclusion::GoalOccluded(){
    
-   /* Get the diffusion vector to perform obstacle avoidance */
-   bool bCollision;
-   CVector2 cDiffusion = DiffusionVector(bCollision);
-
+   
    CVector2 cVec2Obj = Vector2Object();
-   cVec2Obj = CVector2(m_sWheelTurningParams.MaxSpeed,cVec2Obj.Angle());
+   if(cVec2Obj.Length() > m_sStateData.ApproachDistance)
+      m_sStateData.ObjectReached = false;
+   cVec2Obj = CVector2(m_sWheelTurningParams.MaxSpeed,cVec2Obj.Angle());  
+   /*Move towards left hand side of the object*/
    SetWheelSpeedsFromVector(cVec2Obj);
 
-   if (m_sStateData.ObjectVisibility){
-      /*Move towards left hand side of the object*/
-      SetWheelSpeedsFromVector(1*cVec2Obj+0*m_sWheelTurningParams.MaxSpeed * cDiffusion );
-   }
-   else{
-      /* Random walk*/
-       SetWheelSpeedsFromVector(m_sWheelTurningParams.MaxSpeed * cDiffusion );
-   }
+
+   // if (m_sStateData.ObjectVisibility){
+
+   // }
+   // else{
+   //    /* Get the diffusion vector to perform obstacle avoidance */
+   //    bool bCollision;
+   //    CVector2 cDiffusion = DiffusionVector(bCollision);
+
+   //    /* Random walk*/
+   //     SetWheelSpeedsFromVector(m_sWheelTurningParams.MaxSpeed * cDiffusion );
+   // }
 }
 
 
@@ -506,6 +498,5 @@ void CFootBotOcclusion::GoalOccluded(){
  * this controller.
  * When ARGoS reads that string in the XML file, it knows which controller
  * class to instantiate.
- * See also the XML configuration files for an example of how this is used.
  */
 REGISTER_CONTROLLER(CFootBotOcclusion, "footbot_occlusion_controller")

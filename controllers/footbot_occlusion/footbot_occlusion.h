@@ -112,6 +112,7 @@ public:
       enum EState {
          STATE_SEARCH_OBJECT = 0,
          STATE_APPROACH_OBJECT,
+         STATE_NEAR_OBJECT,
       	 STATE_CHECK_FOR_GOAL,
       	 STATE_GOAL_NOT_OCCLUDED, 	//(Move around object)
          STATE_GOAL_OCCLUDED, 		//(Push object)
@@ -127,7 +128,10 @@ public:
       bool ObjectReached;
 
       Real ApproachDistance;
-
+      /* The minimum number of steps before leaving "not occluded" state*/
+      size_t MinimumMoveAroundTime;
+      /* Curent number of steps in "not occluded" state*/
+      size_t TimeInMoveAround;
 
       SStateData();
       void Init(TConfigurationNode& t_node);
