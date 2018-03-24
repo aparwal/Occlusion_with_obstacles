@@ -37,7 +37,7 @@ using namespace argos;
 /*
  * A controller is simply an implementation of the CCI_Controller class in argos.
  */
-class CFootBotOcclusion : public CCI_Controller {
+class CFootBotChainLOS : public CCI_Controller {
 
 public:
    /*
@@ -126,10 +126,10 @@ public:
 
 
    /* Class constructor. */
-   CFootBotOcclusion();
+   CFootBotChainLOS();
 
    /* Class destructor. */
-   virtual ~CFootBotOcclusion() {}
+   virtual ~CFootBotChainLOS() {}
 
    /*
     * This function initializes the controller.
@@ -182,11 +182,10 @@ private:
    
    // TODO
 
-   void SearchObject();
-   // void ApproachObject();
-   void CheckForGoal();
-   void GoalNotOccluded();
-   void GoalOccluded();
+   void Explore();
+   void Landmark();
+   void Reverse();
+   void Chain();
 
 
    /* Pointer to the differential steering actuator */
