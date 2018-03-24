@@ -103,7 +103,8 @@ public:
    struct SStateData {
       /* The two possible states in which the controller can be */
       enum EState {
-         STATE_EXPLORE = 0,
+      	 STATE_INIT = 0,
+         STATE_EXPLORE,
          STATE_LANDMARK,
          STATE_REVERSE,
       	 STATE_CHAIN, 		//(Push object)

@@ -16,8 +16,8 @@
   <!-- *************** -->
   <controllers>
 
-    <footbot_occlusion_controller id="foc"
-                                  library="build/controllers/footbot_occlusion/libfootbot_occlusion.so">
+    <footbot_chain_los_controller id="fcc"
+                                  library="build/controllers/footbot_chain_los/libfootbot_chain_los.so">
       <actuators>
         <differential_steering implementation="default" />
         <leds implementation="default" medium="leds" />
@@ -41,7 +41,7 @@
                minimum_move_around_time="15"/>
       </params>
 
-    </footbot_occlusion_controller>
+    </footbot_chain_los_controller>
 
   </controllers>
 
@@ -75,7 +75,7 @@
       <orientation method="gaussian" mean="0,0,0" std_dev="360,0,0" />
       <entity quantity="20" max_trials="100">
         <foot-bot id="fb" omnidirectional_camera_aperture="80">
-          <controller config="foc" />
+          <controller config="fcc" />
         </foot-bot>
       </entity>
     </distribute>
@@ -198,6 +198,11 @@
                    position="-4,-4,4"
                    look_at="3.5,3.5,0.1"
                    lens_focal_length="20" />
+        <placement idx="2"
+                   position="4,4,4"
+                   look_at="-3.5,-3.5,0.1"
+                   lens_focal_length="20" />
+      
       </camera>
     </qt-opengl>
   </visualization>
