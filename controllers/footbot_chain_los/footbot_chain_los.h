@@ -1,19 +1,12 @@
 /*
  * AUTHOR: Anand Parwal <aparwal@wpi.edu>
  *
- * Occlusion controller implemented for swarm intelligence project
+ * Line-of-sight based Chain formation controller for swarm robots
  *
- * This controller follows the paper:
- * Chen, Jianing, et al. "Occlusion-based cooperative transport with 
- * a swarm of miniature mobile robots." 
- * IEEE Transactions on Robotics 31.2 (2015): 307-321.
- *
- * This controller is meant to be used with the XML file:
- *    experiments/occlusion.argos
  */
 
-#ifndef FOOTBOT_OCCLUSION_H
-#define FOOTBOT_OCCLUSION_H
+#ifndef FOOTBOT_CHAIN_LOS_H
+#define FOOTBOT_CHAIN_LOS_H
 
 /*
  * Include some necessary headers.
@@ -110,12 +103,10 @@ public:
    struct SStateData {
       /* The two possible states in which the controller can be */
       enum EState {
-         STATE_SEARCH_OBJECT = 0,
-         STATE_APPROACH_OBJECT,
-         STATE_NEAR_OBJECT,
-      	 STATE_CHECK_FOR_GOAL,
-      	 STATE_GOAL_NOT_OCCLUDED, 	//(Move around object)
-         STATE_GOAL_OCCLUDED, 		//(Push object)
+         STATE_EXPLORE = 0,
+         STATE_LANDMARK,
+         STATE_REVERSE,
+      	 STATE_CHAIN, 		//(Push object)
       } State;
 
       /* True when the goal is not occluded */
@@ -124,20 +115,14 @@ public:
       /* True when the object is visible */
       bool ObjectVisibility;
 
-      /* True when the object is reached */
-      bool ObjectReached;
+      /* True when a landmark is visible */
+      bool LandmarkVisibility;
 
-      Real ApproachDistance;
-      /* The minimum number of steps before leaving "not occluded" state*/
-      size_t MinimumMoveAroundTime;
-      /* Curent number of steps in "not occluded" state*/
-      size_t TimeInMoveAround;
 
       SStateData();
       void Init(TConfigurationNode& t_node);
       void Reset();
    };
-
 
 
    /* Class constructor. */
@@ -174,58 +159,18 @@ public:
     */
    virtual void Destroy() {}
 
-   /*
-    * Returns true if the robot is currently searching for object.
-    */
-   inline bool IsSearching() const {
-      return m_sStateData.State == SStateData::STATE_SEARCH_OBJECT;
-   }
-
-   /*
-    * Returns true if the robot is currently approaching the object.
-    */
-   inline bool IsApproaching() const {
-      return m_sStateData.State == SStateData::STATE_APPROACH_OBJECT;
-   }
-
-   /*
-    * Returns true if the robot is currently at the object and cheking for goal.
-    */
-   inline bool IsChecking() const {
-      return m_sStateData.State == SStateData::STATE_CHECK_FOR_GOAL;
-   }
-
-   /*
-    * Returns true if the robot is currently moving around the object.
-    */
-   inline bool IsNotOccluded() const {
-      return m_sStateData.State == SStateData::STATE_GOAL_NOT_OCCLUDED;
-   }
-
-   /*
-    * Returns true if the robot is currently pushing the object.
-    */
-   inline bool IsOccluded() const {
-      return m_sStateData.State == SStateData::STATE_GOAL_OCCLUDED;
-   }
-
-
-
 private:
 
    /*
     * Updates the state information.
-    * In pratice, it sets the SStateData::InNest flag.
-    * Future, more complex implementations should add their
-    * state update code here.
     */
    void UpdateState();
 
    /* Get vector for a pure diffsuion type walk*/
    CVector2 DiffusionVector(bool& );
 
-   /* Get vector pointing towards object, lenght roughly equal to distance*/
-   CVector2 Vector2Object();
+   /* Get vector pointing towards object, length roughly equal to distance*/
+   // CVector2 Vector2Object();
 
 
    /* Sets the wheel speeds such that it ultimately follows the given vector*/
