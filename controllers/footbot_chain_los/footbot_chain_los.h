@@ -169,6 +169,9 @@ private:
    /* Get vector for a pure diffsuion type walk*/
    CVector2 DiffusionVector(bool& );
 
+   /* Check if goal and object are visible and set respective flag*/
+   void CheckForGoalAndObject();
+
    /* Get vector pointing towards object, length roughly equal to distance*/
    // CVector2 Vector2Object();
 

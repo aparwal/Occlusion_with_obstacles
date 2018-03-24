@@ -1,5 +1,5 @@
 /* Include the controller definition */
-#include "footbot_occlusion.h"
+#include "footbot_chain_los.h"
 /* Function definitions for XML parsing */
 #include <argos3/core/utility/configuration/argos_configuration.h>
 /* 2D vector definition */
@@ -51,7 +51,7 @@ void CFootBotChainLOS::SWheelTurningParams::Init(TConfigurationNode& t_node) {
 /****************************************/
 
 void CFootBotChainLOS::SStateData::Reset() {
-   State = STATE_SEARCH_OBJECT;
+   State = STATE_EXPLORE;
    GoalVisibility = false;
    ObjectVisibility = true;
    LandmarkVisibility = false;
@@ -69,10 +69,7 @@ void CFootBotChainLOS::SStateData::Init(TConfigurationNode& t_node) {
 
 
 CFootBotChainLOS::SStateData::SStateData(){
-   State = STATE_SEARCH_OBJECT;
-   GoalVisibility = false;
-   ObjectVisibility = true;
-   LandmarkVisibility = false;
+   Reset();
 }
 
 /****************************************/
@@ -251,9 +248,9 @@ void CFootBotChainLOS::ControlStep() {
          Landmark();
          break;
       }
-      case SStateData::CHAIN:{
+      case SStateData::STATE_CHAIN:{
          m_pcLEDs->SetSingleColor(12, CColor::YELLOW);
-         CheckForGoal();
+         Chain();
          break;
       }
 
@@ -272,8 +269,7 @@ void CFootBotChainLOS::ControlStep() {
 void CFootBotChainLOS::UpdateState() {
 
    /* Update visibility variables*/
-   CheckForGoal()
-   CheckForObject()
+   CheckForGoalAndObject();
    
    switch(m_sStateData.State) {
       case SStateData::STATE_EXPLORE:{
@@ -334,7 +330,7 @@ void CFootBotChainLOS::Explore(){
 /****************************************/
 
 void CFootBotChainLOS::Reverse(){
-   m_pcWheels->SetLinearVelocity(-m_fWheelVelocity, -m_fWheelVelocity);
+   m_pcWheels->SetLinearVelocity(-m_sWheelTurningParams.MaxSpeed, -m_sWheelTurningParams.MaxSpeed);
 }
 
 
@@ -354,6 +350,32 @@ void CFootBotChainLOS::Chain(){
 }
 
 
+/****************************************/
+/****************************************/
+void CFootBotChainLOS::CheckForGoalAndObject(){
+   m_sStateData.ObjectVisibility = false;
+   m_sStateData.GoalVisibility = false;
+   
+   CVector2 cAccum;
+   size_t unBlobsSeen = 0;   
+
+   /* Get the camera readings */
+   const CCI_ColoredBlobOmnidirectionalCameraSensor::SReadings& sReadings = m_pcCamera->GetReadings();
+   
+   /* Go through the camera readings to locate oject */
+   if(! sReadings.BlobList.empty()) {
+
+      for(size_t i = 0; i < sReadings.BlobList.size(); ++i) {
+         /*Look for green*/
+         if(sReadings.BlobList[i]->Color == CColor::GREEN)
+            /*Change state variable*/            
+            m_sStateData.ObjectVisibility = true;
+         else if(sReadings.BlobList[i]->Color == CColor::YELLOW)
+            /*Change state variable*/            
+            m_sStateData.GoalVisibility = true;
+      }
+   }
+}
 
 /****************************************/
 /****************************************/
