@@ -1,0 +1,5 @@
+add_library(footbot_chain_los MODULE footbot_chain_los.h footbot_chain_los.cpp)
+target_link_libraries(footbot_chain_los
+  argos3core_simulator
+  argos3plugin_simulator_footbot
+  argos3plugin_simulator_genericrobot)
