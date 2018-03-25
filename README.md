@@ -1,10 +1,8 @@
 # Occlusion with obstacles
 Collective transport algorithm based on Occlusion and chain forming for swarm robotics
-> Under development
+> Project under development
 ## Usage
 ### Compiling
-
-
 >[Argos](https://github.com/ilpincy/argos3) needs to be installed before following:
 ```
 $ git clone htts://github.com/aparwal/Occlusion_with_obstacles.git
@@ -24,7 +22,10 @@ For chain forming:
 ```
 argos3 -c experiments/chain_forming.argos
 ```
-## References
+
+## Concept
+TODO
+### References
 1. Occlusion based transport (without obstacles, unbounded environment) from:
 [Chen, Jianing, et al. "Occlusion-based cooperative transport with a swarm of miniature mobile robots." _IEEE Transactions on Robotics_ 31.2 (2015): 307-321.](http://ieeexplore.ieee.org/abstract/document/7055285/)
 2. Chain forming inspired from: 
