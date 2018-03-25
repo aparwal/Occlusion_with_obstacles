@@ -25,6 +25,9 @@ argos3 -c experiments/chain_forming.argos
 
 ## Concept
 TODO
+### State Machine Representation
+![State transition diagram](./mermaid-diagram.svg)
+
 ### References
 1. Occlusion based transport (without obstacles, unbounded environment) from:
 [Chen, Jianing, et al. "Occlusion-based cooperative transport with a swarm of miniature mobile robots." _IEEE Transactions on Robotics_ 31.2 (2015): 307-321.](http://ieeexplore.ieee.org/abstract/document/7055285/)
