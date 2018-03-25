@@ -376,7 +376,7 @@ void CFootBotOcclusion::UpdateState() {
             ++m_sStateData.TimeInMoveAround;
          }
          else{
-            LOG<<"Out of move_around"<<std::endl;
+            // LOG<<"Out of move_around"<<std::endl;
             /*reset timer*/
             m_sStateData.TimeInMoveAround = 0;
             /* get out of state and push/find object*/
@@ -468,21 +468,8 @@ void CFootBotOcclusion::GoalOccluded(){
    if(cVec2Obj.Length() > m_sStateData.ApproachDistance)
       m_sStateData.ObjectReached = false;
    cVec2Obj = CVector2(m_sWheelTurningParams.MaxSpeed,cVec2Obj.Angle());  
-   /*Move towards left hand side of the object*/
+   /*Move towards the object*/
    SetWheelSpeedsFromVector(cVec2Obj);
-
-
-   // if (m_sStateData.ObjectVisibility){
-
-   // }
-   // else{
-   //    /* Get the diffusion vector to perform obstacle avoidance */
-   //    bool bCollision;
-   //    CVector2 cDiffusion = DiffusionVector(bCollision);
-
-   //    /* Random walk*/
-   //     SetWheelSpeedsFromVector(m_sWheelTurningParams.MaxSpeed * cDiffusion );
-   // }
 }
 
 
