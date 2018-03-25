@@ -107,7 +107,8 @@ public:
          STATE_EXPLORE,
          STATE_LANDMARK,
          STATE_REVERSE,
-      	 STATE_CHAIN, 		//(Push object)
+      	 STATE_CHAIN,
+      	 STATE_PUSH 		//(Push object, once chain is formed)
       } State;
 
       /* True when the goal is not occluded */
@@ -116,8 +117,14 @@ public:
       /* True when the object is visible */
       bool ObjectVisibility;
 
-      /* True when a landmark is visible */
-      bool LandmarkVisibility;
+      /* Number of landmarks visible */
+      size_t LandmarkNum;
+
+      /* Number of chain forming robots visible*/
+      size_t ChainNum;
+
+      /* Timesteps spent in chain, for pruning useless chain members*/
+      size_t timeinchain;
 
 
       SStateData();
@@ -190,6 +197,7 @@ private:
    void Landmark();
    void Reverse();
    void Chain();
+   void Push();
 
 
    /* Pointer to the differential steering actuator */

@@ -8,7 +8,7 @@
     <system threads="0" />
     <experiment length="0"
                 ticks_per_second="10"
-                random_seed="7" />
+                random_seed="17" />
   </framework>
 
   <!-- *************** -->
@@ -36,7 +36,7 @@
         <wheel_turning hard_turn_angle_threshold="90"
                        soft_turn_angle_threshold="70"
                        no_turn_angle_threshold="10"
-                       max_speed="20" />
+                       max_speed="40" />
         <state approach_distance="40" 
                minimum_move_around_time="15"/>
       </params>
@@ -63,15 +63,15 @@
       <body position="-4,0,0" orientation="0,0,0" />
     </box>
     <box id="wall_obstacle_first" size="0.1,5,1" movable="false">
-      <body position="-2,-1.5,0" orientation="0,0,0" />
+      <body position="-1.5,-1.5,0" orientation="0,0,0" />
     </box>
     <box id="wall_obstacle_second" size="0.1,5,1" movable="false">
-      <body position="2,1.5,0" orientation="0,0,0" />
+      <body position="1.5,1.5,0" orientation="0,0,0" />
     </box>
 
     <!-- Initializing robots randomly in the central region -->
     <distribute>
-      <position method="uniform" min="-4,-4,0" max="4,4,0" />
+      <position method="uniform" min="-4,-3,0" max="1,3,0" />
       <orientation method="gaussian" mean="0,0,0" std_dev="360,0,0" />
       <entity quantity="20" max_trials="100">
         <foot-bot id="fb" omnidirectional_camera_aperture="80">
@@ -114,7 +114,7 @@
 
     <!-- Initiallizing object -->
     <box id="object2" size="1,1,1" mass="20" movable="true">
-      <body position="-3.2,-3.2,0" orientation="0,0,0"/>
+      <body position="-3,-3,0" orientation="0,0,0"/>
         <leds medium="leds">"
             <led offset="0.0,0.5,0.15" anchor="origin" color="green" />
             <led offset="0.4,0.5,0.15" anchor="origin" color="green" />

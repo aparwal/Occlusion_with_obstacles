@@ -54,7 +54,9 @@ void CFootBotChainLOS::SStateData::Reset() {
    State = STATE_INIT;
    GoalVisibility = false;
    ObjectVisibility = false;
-   LandmarkVisibility = false;
+   LandmarkNum = 0;
+   ChainNum = 0;
+   timeinchain = 0;
 }
 
 void CFootBotChainLOS::SStateData::Init(TConfigurationNode& t_node) {
@@ -234,12 +236,12 @@ void CFootBotChainLOS::ControlStep() {
    
    switch(m_sStateData.State) {
       case SStateData::STATE_INIT:{
-         m_pcLEDs->SetSingleColor(12, CColor::BLUE);
+         // m_pcLEDs->SetSingleColor(12, CColor::BLUE);
          Explore();
          break;
       }
       case SStateData::STATE_EXPLORE:{
-         m_pcLEDs->SetSingleColor(12, CColor::BLACK);
+         m_pcLEDs->SetSingleColor(12, CColor::BLUE);
          Explore();
          break;
       }
@@ -256,6 +258,11 @@ void CFootBotChainLOS::ControlStep() {
       case SStateData::STATE_CHAIN:{
          m_pcLEDs->SetSingleColor(12, CColor::YELLOW);
          Chain();
+         break;
+      }
+      case SStateData::STATE_PUSH:{
+         m_pcLEDs->SetSingleColor(12, CColor::BLACK);
+         Explore();
          break;
       }
 
@@ -278,41 +285,63 @@ void CFootBotChainLOS::UpdateState() {
    
    switch(m_sStateData.State) {
       case SStateData::STATE_INIT:{
-         if(m_sStateData.ObjectVisibility || m_sStateData.LandmarkVisibility)
+         if (m_sStateData.ChainNum)
+            m_sStateData.State = SStateData::STATE_PUSH;
+         else if(m_sStateData.LandmarkNum || m_sStateData.ObjectVisibility)
             m_sStateData.State=SStateData::STATE_EXPLORE;
          break;
       }
       case SStateData::STATE_EXPLORE:{
-         if(!m_sStateData.ObjectVisibility && !m_sStateData.LandmarkVisibility)
-            m_sStateData.State=SStateData::STATE_REVERSE;
-         else if(m_sStateData.GoalVisibility)
-            m_sStateData.SStateData::STATE_REVERSE;
+         if(m_sStateData.ChainNum)
+            m_sStateData.State = SStateData::STATE_PUSH;
+
+         else if (!(m_sStateData.LandmarkNum ||m_sStateData.ObjectVisibility))
+            m_sStateData.State = SStateData::STATE_REVERSE;
+
+         else if ((m_sStateData.GoalVisibility) && (m_sStateData.LandmarkNum))
+            m_sStateData.SStateData::STATE_LANDMARK;
          break;
       }
 
       case SStateData::STATE_REVERSE:{
-         if(m_sStateData.ObjectVisibility  || m_sStateData.LandmarkVisibility)
-            m_sStateData.State=SStateData::STATE_LANDMARK;
+         if(m_sStateData.LandmarkNum || m_sStateData.ObjectVisibility)
+            m_sStateData.State = SStateData::STATE_LANDMARK;
          // else if(m_sStateData.ObjectVisibility & m_sStateData.GoalVisibility)
          //    m_sStateData.State=SStateData::STATE_CHAIN;
          break;
       }
 
       case SStateData::STATE_LANDMARK:{
-         // if(!m_sStateData.ObjectVisibility) 
+         // if(m_sStateData.ObjectVisibility && m_sStateData.LandmarkNum>1) 
          //    m_sStateData.State=SStateData::STATE_EXPLORE;
          // else 
-         if((m_sStateData.ObjectVisibility || m_sStateData.LandmarkVisibility) & (m_sStateData.GoalVisibility))
-            m_sStateData.State=SStateData::STATE_CHAIN;
+         if (m_sStateData.GoalVisibility || m_sStateData.ChainNum)
+            m_sStateData.State = SStateData::STATE_CHAIN;
          break;
       }
 
       case SStateData::STATE_CHAIN:{
+         
+         if ((m_sStateData.ChainNum == 1) & (!m_sStateData.ObjectVisibility) & (!m_sStateData.GoalVisibility)){
+            ++m_sStateData.timeinchain;
+            if (m_sStateData.timeinchain > 40)
+               m_sStateData.State = SStateData::STATE_PUSH;
+         }
+         else 
+            m_sStateData.timeinchain = 0;
 
          // if(m_sStateData.ObjectVisibility & !m_sStateData.GoalVisibility)
          //    m_sStateData.State=SStateData::STATE_LANDMARK;
          break;
-      }         
+      }
+      case SStateData::STATE_PUSH:{
+         // if (m_sStateData.ObjectVisibility & !m_sStateData.LandmarkNum)
+         
+
+         // if(m_sStateData.ObjectVisibility & !m_sStateData.GoalVisibility)
+         //    m_sStateData.State=SStateData::STATE_LANDMARK;
+         break;
+      }            
 
                
       default: {
@@ -329,11 +358,6 @@ void CFootBotChainLOS::Explore(){
    /* Get the diffusion vector to perform obstacle avoidance */
    bool bCollision;
    CVector2 cDiffusion = DiffusionVector(bCollision);
-
-   // if (m_sStateData.ObjectVisibility)
-   //    /*Move towards object while avoiding collisions*/
-   //    SetWheelSpeedsFromVector(0.75*cVec2Obj+0.25*m_sWheelTurningParams.MaxSpeed * cDiffusion );
-   // else
    //    /* Random walk*/
    SetWheelSpeedsFromVector(m_sWheelTurningParams.MaxSpeed * cDiffusion );
 
@@ -362,16 +386,23 @@ void CFootBotChainLOS::Chain(){
    // m_pcWheels->SetLinearVelocity(0,0);
 }
 
+/****************************************/
+/****************************************/
+
+void CFootBotChainLOS::Push(){
+   // m_pcWheels->SetLinearVelocity(0,0);
+}
 
 /****************************************/
 /****************************************/
 void CFootBotChainLOS::CheckForGoalAndObject(){
    m_sStateData.ObjectVisibility = false;
    m_sStateData.GoalVisibility = false;
-   m_sStateData.LandmarkVisibility = false;
+   m_sStateData.LandmarkNum = 0;
+   m_sStateData.ChainNum = 0;
    
    CVector2 cAccum;
-   size_t unBlobsSeen = 0;   
+   size_t LandmarkSeen = 0;   
 
    /* Get the camera readings */
    const CCI_ColoredBlobOmnidirectionalCameraSensor::SReadings& sReadings = m_pcCamera->GetReadings();
@@ -384,20 +415,25 @@ void CFootBotChainLOS::CheckForGoalAndObject(){
          if(sReadings.BlobList[i]->Color == CColor::GREEN){
             /*Change state variable*/            
             m_sStateData.ObjectVisibility = true;
-            ++unBlobsSeen;
          }
          if(sReadings.BlobList[i]->Color == CColor::YELLOW){
-            /*Change state variable*/            
-            m_sStateData.GoalVisibility = true;
+            /*Change state variable*/
+            ++m_sStateData.ChainNum;
          }
          if(sReadings.BlobList[i]->Color == CColor::RED){
             /*Change state variable*/            
-            m_sStateData.LandmarkVisibility = true;
+            ++m_sStateData.LandmarkNum;
          }
       }
    }
-   // if (unBlobsSeen > 1)
-   //    m_sStateData.ObjectVisibility = false;    
+   // if (m_sStateData.ObjectVisibility)
+   //    ++m_sStateData.LandmarkNum;
+   /* Get light readings */
+   const CCI_FootBotLightSensor::TReadings& tReadings = m_pcLight->GetReadings();
+   for(size_t i = 0; i < tReadings.size(); ++i) {
+      if (tReadings[i].Value)
+         m_sStateData.GoalVisibility = true;
+   }  
 }
 
 /****************************************/
