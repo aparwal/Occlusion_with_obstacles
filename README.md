@@ -14,7 +14,7 @@ make
 ```
 ### Running 
 In the folder Occlusion_with_obstacles, <br>
-For my implementation of Occlusion Paper [1]:
+For my implementation of Occlusion Paper [[1]](#references):
 ```
 argos3 -c experiments/occlusion.argos
 ```
