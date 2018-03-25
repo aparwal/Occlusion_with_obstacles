@@ -5,12 +5,12 @@ Collective transport algorithm based on Occlusion and chain forming for swarm ro
 ### Compiling
 >[Argos](https://github.com/ilpincy/argos3) needs to be installed before following:
 ```
-$ git clone htts://github.com/aparwal/Occlusion_with_obstacles.git
-$ cd Occlusion_with_obstacles
-$ mkdir build
-$ cd build
-$ cmake
-$ make
+git clone htts://github.com/aparwal/Occlusion_with_obstacles.git
+cd Occlusion_with_obstacles
+mkdir build
+cd build
+cmake
+make
 ```
 ### Running 
 In the folder Occlusion_with_obstacles, <br>
