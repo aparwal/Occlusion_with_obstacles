@@ -3,13 +3,13 @@ Collective transport algorithm based on Occlusion and chain forming for swarm ro
 > Project under development
 ## Usage
 ### Compiling
->[Argos](https://github.com/ilpincy/argos3) needs to be installed before following:
+>[Argos](https://github.com/ilpincy/argos3) needs to be installed first
+
+After cloning this repo, run the following commands in the folder Occlusion_with_obstacles
 ```
-git clone htts://github.com/aparwal/Occlusion_with_obstacles.git
-cd Occlusion_with_obstacles
 mkdir build
 cd build
-cmake
+cmake ..
 make
 ```
 ### Running 
@@ -30,4 +30,4 @@ TODO
 [Chen, Jianing, et al. "Occlusion-based cooperative transport with a swarm of miniature mobile robots." _IEEE Transactions on Robotics_ 31.2 (2015): 307-321.](http://ieeexplore.ieee.org/abstract/document/7055285/)
 2. Chain forming inspired from: 
 [Pinciroli, Carlo, et al. "Adaptation and awareness in robot ensembles: Scenarios and algorithms." _Software Engineering for Collective Autonomic Systems_. Springer, Cham, 2015. 471-494.](https://link.springer.com/chapter/10.1007/978-3-319-16310-9_15 )
-3. Simulator: [Argos](https://github.com/ilpincy/argos3)
+3. [Argos-examples](https://github.com/ilpincy/argos3-examples)
