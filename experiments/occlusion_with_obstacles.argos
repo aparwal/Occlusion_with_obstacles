@@ -1,0 +1,199 @@
+<?xml version="1.0" ?>
+<argos-configuration>
+
+  <!-- ************************* -->
+  <!-- * General configuration * -->
+  <!-- ************************* -->
+  <framework>
+    <system threads="0" />
+    <experiment length="0"
+                ticks_per_second="10"
+                random_seed="7" />
+  </framework>
+
+  <!-- *************** -->
+  <!-- * Controllers * -->
+  <!-- *************** -->
+  <controllers>
+
+    <footbot_occlusion_controller id="fooc"
+                                  library="build/controllers/footbot_occlusion_with_obstacles/libfootbot_occlusion_with_obstacles.so">
+      <actuators>
+        <differential_steering implementation="default" />
+        <leds implementation="default" medium="leds" />
+      </actuators>
+
+      <sensors>
+        <footbot_proximity implementation="default" show_rays="false" />
+        <footbot_light implementation="rot_z_only"  show_rays="true" />
+        <colored_blob_omnidirectional_camera implementation="rot_z_only" medium="leds" show_rays="true" />
+      </sensors>
+
+      
+      <params>
+        <diffusion go_straight_angle_range="-5:5"
+                   delta="0.1" />
+        <wheel_turning hard_turn_angle_threshold="90"
+                       soft_turn_angle_threshold="70"
+                       no_turn_angle_threshold="10"
+                       max_speed="20" />
+        <state approach_distance="40" 
+               minimum_move_around_time="15"/>
+      </params>
+
+    </footbot_occlusion_controller>
+
+  </controllers>
+
+  <!-- *********************** -->
+  <!-- * Arena configuration * -->
+  <!-- *********************** -->
+  <arena size="10, 10, 2" center="0,0,0.5">
+
+    <box id="wall_north" size="8,0.1,0.5" movable="false">
+      <body position="0,4,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_south" size="8,0.1,0.5" movable="false">
+      <body position="0,-4,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_east" size="0.1,8,0.5" movable="false">
+      <body position="4,0,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_west" size="0.1,8,0.5" movable="false">
+      <body position="-4,0,0" orientation="0,0,0" />
+    </box>
+
+    <!-- Initializing robots randomly in the central region -->
+    <distribute>
+      <position method="uniform" min="-4,-4,0" max="4,4,0" />
+      <orientation method="gaussian" mean="0,0,0" std_dev="360,0,0" />
+      <entity quantity="20" max_trials="100">
+        <foot-bot id="fb" omnidirectional_camera_aperture="80">
+          <controller config="fooc" />
+        </foot-bot>
+      </entity>
+    </distribute>
+
+    <!-- Initiallizing object -->
+    <!-- <cylinder id="object" radius="0.5" height="0.75" mass="20" movable="true">
+      <body position="-2,-2,0" orientation="0,0,0"/>
+       <leds medium="leds">"
+            <led offset="0.5,0,0.15" anchor="origin" color="green" />
+            <led offset="-0.5,0,0.15" anchor="origin" color="green" />
+            <led offset="0,0.5,0.15" anchor="origin" color="green" />
+            <led offset="0,-0.5,0.15" anchor="origin" color="green" />
+            <led offset="0.353,0.353,0.15" anchor="origin" color="green" />
+            <led offset="0.353,-0.353,0.15" anchor="origin" color="green" />
+            <led offset="-0.353,0.353,0.15" anchor="origin" color="green" />
+            <led offset="-0.353,-0.353,0.15" anchor="origin" color="green" />
+            <led offset="0.461,0.191,0.15" anchor="origin" color="green" />
+            <led offset="0.461,-0.191,0.15" anchor="origin" color="green" />
+            <led offset="-0.461,0.191,0.15" anchor="origin" color="green" />
+            <led offset="-0.461,-0.191,0.15" anchor="origin" color="green" />
+            <led offset="0.191,0.461,0.15" anchor="origin" color="green" />
+            <led offset="0.191,-0.461,0.15" anchor="origin" color="green" />
+            <led offset="-0.191,0.461,0.15" anchor="origin" color="green" />
+            <led offset="-0.191,-0.461,0.15" anchor="origin" color="green" />
+            <led offset="0.25,0.433,0.15" anchor="origin" color="green" />
+            <led offset="0.25,-0.433,0.15" anchor="origin" color="green" />
+            <led offset="-0.25,0.433,0.15" anchor="origin" color="green" />
+            <led offset="-0.25,-0.433,0.15" anchor="origin" color="green" />
+            <led offset="0.433,0.25,0.15" anchor="origin" color="green" />
+            <led offset="0.433,-0.25,0.15" anchor="origin" color="green" />
+            <led offset="-0.433,0.25,0.15" anchor="origin" color="green" />
+            <led offset="-0.433,-0.25,0.15" anchor="origin" color="green" />
+
+       </leds>
+    </cylinder> -->
+
+    <!-- Initiallizing object -->
+    <box id="object2" size="1,1,1" mass="20" movable="true">
+      <body position="-2,-2,0" orientation="0,0,0"/>
+        <leds medium="leds">"
+            <led offset="0.0,0.5,0.15" anchor="origin" color="green" />
+            <led offset="0.4,0.5,0.15" anchor="origin" color="green" />
+            <led offset="0.3,0.5,0.15" anchor="origin" color="green" />
+            <led offset="0.2,0.5,0.15" anchor="origin" color="green" />
+            <led offset="0.1,0.5,0.15" anchor="origin" color="green" />
+            <led offset="0.0,0.5,0.15" anchor="origin" color="green" />
+            <led offset="-0.4,0.5,0.15" anchor="origin" color="green" />
+            <led offset="-0.3,0.5,0.15" anchor="origin" color="green" />
+            <led offset="-0.2,0.5,0.15" anchor="origin" color="green" />
+            <led offset="-0.1,0.5,0.15" anchor="origin" color="green" />
+
+            <led offset="0.5,0.0,0.15" anchor="origin" color="green" />
+            <led offset="0.5,0.4,0.15" anchor="origin" color="green" />
+            <led offset="0.5,0.3,0.15" anchor="origin" color="green" />
+            <led offset="0.5,0.2,0.15" anchor="origin" color="green" />
+            <led offset="0.5,0.1,0.15" anchor="origin" color="green" />
+            <led offset="0.5,-0.0,0.15" anchor="origin" color="green" />
+            <led offset="0.5,-0.4,0.15" anchor="origin" color="green" />
+            <led offset="0.5,-0.3,0.15" anchor="origin" color="green" />
+            <led offset="0.5,-0.2,0.15" anchor="origin" color="green" />
+            <led offset="0.5,-0.1,0.15" anchor="origin" color="green" />
+
+            <led offset="0.0,-0.5,0.15" anchor="origin" color="green" />
+            <led offset="0.4,-0.5,0.15" anchor="origin" color="green" />
+            <led offset="0.3,-0.5,0.15" anchor="origin" color="green" />
+            <led offset="0.2,-0.5,0.15" anchor="origin" color="green" />
+            <led offset="0.1,-0.5,0.15" anchor="origin" color="green" />
+            <led offset="-0.0,-0.5,0.15" anchor="origin" color="green" />
+            <led offset="-0.4,-0.5,0.15" anchor="origin" color="green" />
+            <led offset="-0.3,-0.5,0.15" anchor="origin" color="green" />
+            <led offset="-0.2,-0.5,0.15" anchor="origin" color="green" />
+            <led offset="-0.1,-0.5,0.15" anchor="origin" color="green" />
+            <led offset="-0.5,0.0,0.15" anchor="origin" color="green" />
+            <led offset="-0.5,0.4,0.15" anchor="origin" color="green" />
+            <led offset="-0.5,0.3,0.15" anchor="origin" color="green" />
+            <led offset="-0.5,0.2,0.15" anchor="origin" color="green" />
+            <led offset="-0.5,0.1,0.15" anchor="origin" color="green" />
+            <led offset="-0.5,-0.0,0.15" anchor="origin" color="green" />
+            <led offset="-0.5,-0.4,0.15" anchor="origin" color="green" />
+            <led offset="-0.5,-0.3,0.15" anchor="origin" color="green" />
+            <led offset="-0.5,-0.2,0.15" anchor="origin" color="green" />
+            <led offset="-0.5,-0.1,0.15" anchor="origin" color="green" />
+          </leds> 
+        </box>
+
+            
+
+    
+
+    <!-- Initializing target light -->
+    <light id="target"
+       position="3.5,3.5,1.4"
+       orientation="0,0,0"
+       color="yellow"
+       intensity="20.0"
+       medium="leds" />
+  </arena>
+
+  <!-- ******************* -->
+  <!-- * Physics engines * -->
+  <!-- ******************* -->
+  <physics_engines>
+    <dynamics2d id="dyn2d" />
+  </physics_engines>
+
+  <!-- ********* -->
+  <!-- * Media * -->
+  <!-- ********* -->
+  <media>
+    <led id="leds" />
+  </media>
+
+  <!-- ****************** -->
+  <!-- * Visualization * -->
+  <!-- ****************** -->
+  <visualization>
+    <qt-opengl >
+      <camera>
+        <placement idx="1"
+                   position="-4,-4,4"
+                   look_at="3.5,3.5,0.1"
+                   lens_focal_length="20" />
+      </camera>
+    </qt-opengl>
+  </visualization>
+
+</argos-configuration>

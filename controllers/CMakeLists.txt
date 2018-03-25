@@ -2,3 +2,4 @@ include_directories(${CMAKE_SOURCE_DIR}/controllers)
 
 add_subdirectory(footbot_occlusion)
 add_subdirectory(footbot_chain_los)
+add_subdirectory(footbot_occlusion_with_obstacles)
